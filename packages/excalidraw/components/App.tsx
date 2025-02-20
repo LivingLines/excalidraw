@@ -4439,7 +4439,7 @@ class App extends React.Component<AppProps, AppState> {
               })`,
             );
           }
-          if (shape === "arrow" && this.state.activeTool.type === "arrow") {
+          if (this.state.activeTool.type === "arrow") {
             this.setState((prevState) => ({
               currentItemArrowType:
                 prevState.currentItemArrowType === ARROW_TYPE.sharp

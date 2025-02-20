@@ -41,12 +41,15 @@ import {
 import "./Actions.scss";
 import DropdownMenu from "./dropdownMenu/DropdownMenu";
 import {
-  EmbedIcon,
   extraToolsIcon,
   frameToolIcon,
-  mermaidLogoIcon,
   laserPointerToolIcon,
   MagicIcon,
+  RectangleIcon,
+  DiamondIcon,
+  EllipseIcon,
+  ArrowIcon,
+  LineIcon,
 } from "./icons";
 import { KEYS } from "../keys";
 import { useTunnels } from "../context/tunnels";
@@ -279,6 +282,11 @@ export const ShapesSwitcher = ({
 }) => {
   const [isExtraToolsMenuOpen, setIsExtraToolsMenuOpen] = useState(false);
 
+  const rectangleToolSelected = activeTool.type === "rectangle";
+  const diamondToolSelected = activeTool.type === "diamond";
+  const ellipseToolSelected = activeTool.type === "ellipse";
+  const arrowToolSelected = activeTool.type === "arrow";
+  const lineToolSelected = activeTool.type === "line";
   const frameToolSelected = activeTool.type === "frame";
   const laserToolSelected = activeTool.type === "laser";
   const embeddableToolSelected = activeTool.type === "embeddable";
@@ -353,7 +361,7 @@ export const ShapesSwitcher = ({
           title={t("toolBar.extraTools")}
         >
           {extraToolsIcon}
-          {app.props.aiEnabled !== false && (
+          {app.props.aiEnabled && (
             <div
               style={{
                 display: "inline-flex",
@@ -378,6 +386,52 @@ export const ShapesSwitcher = ({
           onSelect={() => setIsExtraToolsMenuOpen(false)}
           className="App-toolbar__extra-tools-dropdown"
         >
+
+          <DropdownMenu.Item
+            onSelect={() => app.setActiveTool({ type: "rectangle" })}
+            icon={RectangleIcon}
+            shortcut={KEYS.R.toLocaleUpperCase()}
+            data-testid="toolbar-rectangle"
+            selected={rectangleToolSelected}
+          >
+            {t("toolBar.rectangle")}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onSelect={() => app.setActiveTool({ type: "diamond" })}
+            icon={DiamondIcon}
+            shortcut={KEYS.D.toLocaleUpperCase()}
+            data-testid="toolbar-diamond"
+            selected={diamondToolSelected}
+          >
+            {t("toolBar.diamond")}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onSelect={() => app.setActiveTool({ type: "ellipse" })}
+            icon={EllipseIcon}
+            shortcut={KEYS.O.toLocaleUpperCase()}
+            data-testid="toolbar-ellipse"
+            selected={ellipseToolSelected}
+          >
+            {t("toolBar.ellipse")}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onSelect={() => app.setActiveTool({ type: "arrow" })}
+            icon={ArrowIcon}
+            shortcut={KEYS.A.toLocaleUpperCase()}
+            data-testid="toolbar-arrow"
+            selected={arrowToolSelected}
+          >
+            {t("toolBar.arrow")}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onSelect={() => app.setActiveTool({ type: "line" })}
+            icon={LineIcon}
+            shortcut={KEYS.L.toLocaleUpperCase()}
+            data-testid="toolbar-line"
+            selected={lineToolSelected}
+          >
+            {t("toolBar.line")}
+          </DropdownMenu.Item>
           <DropdownMenu.Item
             onSelect={() => app.setActiveTool({ type: "frame" })}
             icon={frameToolIcon}
@@ -388,14 +442,6 @@ export const ShapesSwitcher = ({
             {t("toolBar.frame")}
           </DropdownMenu.Item>
           <DropdownMenu.Item
-            onSelect={() => app.setActiveTool({ type: "embeddable" })}
-            icon={EmbedIcon}
-            data-testid="toolbar-embeddable"
-            selected={embeddableToolSelected}
-          >
-            {t("toolBar.embeddable")}
-          </DropdownMenu.Item>
-          <DropdownMenu.Item
             onSelect={() => app.setActiveTool({ type: "laser" })}
             icon={laserPointerToolIcon}
             data-testid="toolbar-laser"
@@ -404,27 +450,19 @@ export const ShapesSwitcher = ({
           >
             {t("toolBar.laser")}
           </DropdownMenu.Item>
-          <div style={{ margin: "6px 0", fontSize: 14, fontWeight: 600 }}>
-            Generate
-          </div>
-          {app.props.aiEnabled !== false && <TTDDialogTriggerTunnel.Out />}
-          <DropdownMenu.Item
-            onSelect={() => app.setOpenDialog({ name: "ttd", tab: "mermaid" })}
-            icon={mermaidLogoIcon}
-            data-testid="toolbar-embeddable"
-          >
-            {t("toolBar.mermaidToExcalidraw")}
-          </DropdownMenu.Item>
-          {app.props.aiEnabled !== false && app.plugins.diagramToCode && (
+          {app.props.aiEnabled && (
             <>
-              <DropdownMenu.Item
-                onSelect={() => app.onMagicframeToolSelect()}
-                icon={MagicIcon}
-                data-testid="toolbar-magicframe"
-              >
-                {t("toolBar.magicframe")}
-                <DropdownMenu.Item.Badge>AI</DropdownMenu.Item.Badge>
-              </DropdownMenu.Item>
+              <TTDDialogTriggerTunnel.Out />
+              {app.plugins.diagramToCode && (
+                <DropdownMenu.Item
+                  onSelect={() => app.onMagicframeToolSelect()}
+                  icon={MagicIcon}
+                  data-testid="toolbar-magicframe"
+                >
+                  {t("toolBar.magicframe")}
+                  <DropdownMenu.Item.Badge>AI</DropdownMenu.Item.Badge>
+                </DropdownMenu.Item>
+              )}
             </>
           )}
         </DropdownMenu.Content>

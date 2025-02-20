@@ -793,6 +793,7 @@ const ExcalidrawWrapper = () => {
       })}
     >
       <Excalidraw
+        aiEnabled={false}
         excalidrawAPI={excalidrawRefCallback}
         onChange={onChange}
         initialData={initialStatePromiseRef.current.promise}
