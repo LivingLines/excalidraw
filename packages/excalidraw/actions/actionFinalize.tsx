@@ -1,22 +1,25 @@
-import { KEYS } from "../keys";
-import { isInvisiblySmallElement } from "../element";
-import { arrayToMap, updateActiveTool } from "../utils";
+import { pointFrom } from "@excalidraw/math";
+
 import { ToolButton } from "../components/ToolButton";
 import { done } from "../components/icons";
-import { t } from "../i18n";
-import { register } from "./register";
-import { mutateElement } from "../element/mutateElement";
-import { LinearElementEditor } from "../element/linearElementEditor";
+import { resetCursor } from "../cursor";
+import { isInvisiblySmallElement } from "../element";
 import {
   maybeBindLinearElement,
   bindOrUnbindLinearElement,
 } from "../element/binding";
+import { LinearElementEditor } from "../element/linearElementEditor";
+import { mutateElement } from "../element/mutateElement";
 import { isBindingElement, isLinearElement } from "../element/typeChecks";
-import type { AppState } from "../types";
-import { resetCursor } from "../cursor";
-import { StoreAction } from "../store";
-import { pointFrom } from "../../math";
+import { t } from "../i18n";
+import { KEYS } from "../keys";
 import { isPathALoop } from "../shapes";
+import { CaptureUpdateAction } from "../store";
+import { arrayToMap, updateActiveTool } from "../utils";
+
+import { register } from "./register";
+
+import type { AppState } from "../types";
 
 export const actionFinalize = register({
   name: "finalize",
@@ -52,7 +55,7 @@ export const actionFinalize = register({
             cursorButton: "up",
             editingLinearElement: null,
           },
-          storeAction: StoreAction.CAPTURE,
+          captureUpdate: CaptureUpdateAction.IMMEDIATELY,
         };
       }
     }
@@ -199,7 +202,7 @@ export const actionFinalize = register({
         pendingImageElementId: null,
       },
       // TODO: #7348 we should not capture everything, but if we don't, it leads to incosistencies -> revisit
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   keyTest: (event, appState) =>

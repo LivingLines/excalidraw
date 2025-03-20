@@ -1,17 +1,18 @@
-import type { Action, ActionResult } from "./types";
-import { UndoIcon, RedoIcon } from "../components/icons";
 import { ToolButton } from "../components/ToolButton";
-import { t } from "../i18n";
-import type { History } from "../history";
-import { HistoryChangedEvent } from "../history";
-import type { AppClassProperties, AppState } from "../types";
-import { KEYS, matchKey } from "../keys";
-import { arrayToMap } from "../utils";
+import { UndoIcon, RedoIcon } from "../components/icons";
 import { isWindows } from "../constants";
-import type { SceneElementsMap } from "../element/types";
-import type { Store } from "../store";
-import { StoreAction } from "../store";
+import { HistoryChangedEvent } from "../history";
 import { useEmitter } from "../hooks/useEmitter";
+import { t } from "../i18n";
+import { KEYS, matchKey } from "../keys";
+import { CaptureUpdateAction } from "../store";
+import { arrayToMap } from "../utils";
+
+import type { SceneElementsMap } from "../element/types";
+import type { History } from "../history";
+import type { Store } from "../store";
+import type { AppClassProperties, AppState } from "../types";
+import type { Action, ActionResult } from "./types";
 
 const executeHistoryAction = (
   app: AppClassProperties,
@@ -30,7 +31,7 @@ const executeHistoryAction = (
     const result = updater();
 
     if (!result) {
-      return { storeAction: StoreAction.NONE };
+      return { captureUpdate: CaptureUpdateAction.EVENTUALLY };
     }
 
     const [nextElementsMap, nextAppState] = result;
@@ -39,11 +40,11 @@ const executeHistoryAction = (
     return {
       appState: nextAppState,
       elements: nextElements,
-      storeAction: StoreAction.UPDATE,
+      captureUpdate: CaptureUpdateAction.NEVER,
     };
   }
 
-  return { storeAction: StoreAction.NONE };
+  return { captureUpdate: CaptureUpdateAction.EVENTUALLY };
 };
 
 type ActionCreator = (history: History, store: Store) => Action;

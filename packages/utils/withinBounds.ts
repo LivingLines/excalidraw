@@ -1,26 +1,27 @@
-import type {
-  ExcalidrawElement,
-  ExcalidrawFreeDrawElement,
-  ExcalidrawLinearElement,
-  NonDeletedExcalidrawElement,
-} from "../excalidraw/element/types";
+import { getElementBounds } from "@excalidraw/excalidraw/element/bounds";
 import {
   isArrowElement,
   isExcalidrawElement,
   isFreeDrawElement,
   isLinearElement,
   isTextElement,
-} from "../excalidraw/element/typeChecks";
-import type { Bounds } from "../excalidraw/element/bounds";
-import { getElementBounds } from "../excalidraw/element/bounds";
-import { arrayToMap } from "../excalidraw/utils";
-import type { LocalPoint } from "../math";
+} from "@excalidraw/excalidraw/element/typeChecks";
+import { arrayToMap } from "@excalidraw/excalidraw/utils";
 import {
   rangeIncludesValue,
   pointFrom,
   pointRotateRads,
   rangeInclusive,
-} from "../math";
+} from "@excalidraw/math";
+
+import type { Bounds } from "@excalidraw/excalidraw/element/bounds";
+import type {
+  ExcalidrawElement,
+  ExcalidrawFreeDrawElement,
+  ExcalidrawLinearElement,
+  NonDeletedExcalidrawElement,
+} from "@excalidraw/excalidraw/element/types";
+import type { LocalPoint } from "@excalidraw/math";
 
 type Element = NonDeletedExcalidrawElement;
 type Elements = readonly NonDeletedExcalidrawElement[];

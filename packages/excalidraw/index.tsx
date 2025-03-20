@@ -1,21 +1,22 @@
 import React, { useEffect } from "react";
-import { InitializeApp } from "./components/InitializeApp";
+
 import App from "./components/App";
-import { isShallowEqual } from "./utils";
+import { InitializeApp } from "./components/InitializeApp";
+import Footer from "./components/footer/FooterCenter";
+import LiveCollaborationTrigger from "./components/live-collaboration/LiveCollaborationTrigger";
+import MainMenu from "./components/main-menu/MainMenu";
+import WelcomeScreen from "./components/welcome-screen/WelcomeScreen";
+import { DEFAULT_UI_OPTIONS } from "./constants";
+import { defaultLang } from "./i18n";
+import { EditorJotaiProvider, editorJotaiStore } from "./editor-jotai";
 import polyfill from "./polyfill";
+import { isShallowEqual } from "./utils";
 
 import "./css/app.scss";
 import "./css/styles.scss";
 import "./fonts/fonts.css";
 
 import type { AppProps, ExcalidrawProps } from "./types";
-import { defaultLang } from "./i18n";
-import { DEFAULT_UI_OPTIONS } from "./constants";
-import { EditorJotaiProvider, editorJotaiStore } from "./editor-jotai";
-import Footer from "./components/footer/FooterCenter";
-import MainMenu from "./components/main-menu/MainMenu";
-import WelcomeScreen from "./components/welcome-screen/WelcomeScreen";
-import LiveCollaborationTrigger from "./components/live-collaboration/LiveCollaborationTrigger";
 
 polyfill();
 
@@ -233,7 +234,7 @@ export {
   exportToBlob,
   exportToSvg,
   exportToClipboard,
-} from "../utils/export";
+} from "@excalidraw/utils/export";
 
 export { serializeAsJSON, serializeLibraryAsJSON } from "./data/json";
 export {
@@ -251,6 +252,7 @@ export {
   MIME_TYPES,
   ROUNDNESS,
   DEFAULT_LASER_COLOR,
+  UserIdleState,
 } from "./constants";
 
 export {
@@ -259,7 +261,7 @@ export {
   bumpVersion,
 } from "./element/mutateElement";
 
-export { StoreAction } from "./store";
+export { CaptureUpdateAction } from "./store";
 
 export { parseLibraryTokensFromUrl, useHandleLibrary } from "./data/library";
 
@@ -290,7 +292,7 @@ export {
   elementsOverlappingBBox,
   isElementInsideBBox,
   elementPartiallyOverlapsWithOrContainsBBox,
-} from "../utils/withinBounds";
+} from "@excalidraw/utils/withinBounds";
 
 export { DiagramToCodePlugin } from "./components/DiagramToCodePlugin/DiagramToCodePlugin";
 export { getDataURL } from "./data/blob";

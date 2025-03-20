@@ -1,3 +1,5 @@
+import { PRECISION } from "./utils";
+
 import type {
   Degrees,
   GlobalPoint,
@@ -5,7 +7,6 @@ import type {
   PolarCoords,
   Radians,
 } from "./types";
-import { PRECISION } from "./utils";
 
 // TODO: Simplify with modulo and fix for angles beyond 4*Math.PI and - 4*Math.PI
 export const normalizeRadians = (angle: Radians): Radians => {
@@ -26,7 +27,10 @@ export const normalizeRadians = (angle: Radians): Radians => {
 export const cartesian2Polar = <P extends GlobalPoint | LocalPoint>([
   x,
   y,
-]: P): PolarCoords => [Math.hypot(x, y), Math.atan2(y, x)];
+]: P): PolarCoords => [
+  Math.hypot(x, y),
+  normalizeRadians(Math.atan2(y, x) as Radians),
+];
 
 export function degreesToRadians(degrees: Degrees): Radians {
   return ((degrees * Math.PI) / 180) as Radians;

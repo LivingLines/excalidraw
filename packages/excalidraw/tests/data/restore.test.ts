@@ -1,18 +1,21 @@
+import { pointFrom } from "@excalidraw/math";
+import { vi } from "vitest";
+
+import { getDefaultAppState } from "../../appState";
+import { DEFAULT_SIDEBAR, FONT_FAMILY, ROUNDNESS } from "../../constants";
 import * as restore from "../../data/restore";
+import { newElementWith } from "../../element/mutateElement";
+import * as sizeHelpers from "../../element/sizeHelpers";
+import { API } from "../helpers/api";
+
+import type { ImportedDataState } from "../../data/types";
 import type {
   ExcalidrawElement,
   ExcalidrawFreeDrawElement,
   ExcalidrawLinearElement,
   ExcalidrawTextElement,
 } from "../../element/types";
-import * as sizeHelpers from "../../element/sizeHelpers";
-import { API } from "../helpers/api";
-import { getDefaultAppState } from "../../appState";
-import type { ImportedDataState } from "../../data/types";
 import type { NormalizedZoomValue } from "../../types";
-import { DEFAULT_SIDEBAR, FONT_FAMILY, ROUNDNESS } from "../../constants";
-import { newElementWith } from "../../element/mutateElement";
-import { vi } from "vitest";
 
 describe("restoreElements", () => {
   const mockSizeHelper = vi.spyOn(sizeHelpers, "isInvisiblySmallElement");
@@ -103,6 +106,7 @@ describe("restoreElements", () => {
     const freedrawElement = API.createElement({
       type: "freedraw",
       id: "id-freedraw01",
+      points: [pointFrom(0, 0), pointFrom(10, 10)],
     });
 
     const restoredFreedraw = restore.restoreElements(

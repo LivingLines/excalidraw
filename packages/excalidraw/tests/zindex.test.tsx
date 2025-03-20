@@ -1,8 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
-import { act, getCloneByOrigId, render } from "./test-utils";
-import { Excalidraw } from "../index";
-import { reseed } from "../random";
+
 import {
   actionSendBackward,
   actionBringForward,
@@ -10,17 +7,21 @@ import {
   actionSendToBack,
   actionDuplicateSelection,
 } from "../actions";
-import type { AppState } from "../types";
-import { API } from "./helpers/api";
 import { selectGroupsForSelectedElements } from "../groups";
+import { Excalidraw } from "../index";
+import { reseed } from "../random";
+
+import { API } from "./helpers/api";
+import { act, getCloneByOrigId, render, unmountComponent } from "./test-utils";
+
 import type {
   ExcalidrawElement,
   ExcalidrawFrameElement,
   ExcalidrawSelectionElement,
 } from "../element/types";
+import type { AppState } from "../types";
 
-// Unmount ReactDOM from root
-ReactDOM.unmountComponentAtNode(document.getElementById("root")!);
+unmountComponent();
 
 beforeEach(() => {
   localStorage.clear();

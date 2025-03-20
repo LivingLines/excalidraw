@@ -1,13 +1,15 @@
+import { pointFrom } from "@excalidraw/math";
 import React from "react";
-import { fireEvent, render } from "./test-utils";
-import { Excalidraw, isLinearElement } from "../index";
-import { UI, Pointer, Keyboard } from "./helpers/ui";
-import { getTransformHandles } from "../element/transformHandles";
-import { API } from "./helpers/api";
-import { KEYS } from "../keys";
+
 import { actionWrapTextInContainer } from "../actions/actionBoundText";
+import { getTransformHandles } from "../element/transformHandles";
+import { Excalidraw, isLinearElement } from "../index";
+import { KEYS } from "../keys";
 import { arrayToMap } from "../utils";
-import { pointFrom } from "../../math";
+
+import { API } from "./helpers/api";
+import { UI, Pointer, Keyboard } from "./helpers/ui";
+import { fireEvent, render } from "./test-utils";
 
 const { h } = window;
 
@@ -64,7 +66,6 @@ describe("element binding", () => {
 
     expect(arrow.startBinding).toEqual({
       elementId: rect.id,
-      fixedPoint: null,
       focus: expect.toBeNonNaNNumber(),
       gap: expect.toBeNonNaNNumber(),
     });
@@ -77,13 +78,11 @@ describe("element binding", () => {
     // Both the start and the end points should be bound
     expect(arrow.startBinding).toEqual({
       elementId: rect.id,
-      fixedPoint: null,
       focus: expect.toBeNonNaNNumber(),
       gap: expect.toBeNonNaNNumber(),
     });
     expect(arrow.endBinding).toEqual({
       elementId: rect.id,
-      fixedPoint: null,
       focus: expect.toBeNonNaNNumber(),
       gap: expect.toBeNonNaNNumber(),
     });

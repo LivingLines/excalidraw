@@ -1,4 +1,14 @@
+import { clamp, roundToStep } from "@excalidraw/math";
+
+import {
+  getDefaultAppState,
+  isEraserActive,
+  isHandToolActive,
+} from "../appState";
+import { DEFAULT_CANVAS_BACKGROUND_PICKS } from "../colors";
 import { ColorPicker } from "../components/ColorPicker/ColorPicker";
+import { ToolButton } from "../components/ToolButton";
+import { Tooltip } from "../components/Tooltip";
 import {
   handIcon,
   MoonIcon,
@@ -9,7 +19,6 @@ import {
   ZoomOutIcon,
   ZoomResetIcon,
 } from "../components/icons";
-import { ToolButton } from "../components/ToolButton";
 import {
   CURSOR_TYPE,
   MAX_ZOOM,
@@ -17,28 +26,22 @@ import {
   THEME,
   ZOOM_STEP,
 } from "../constants";
+import { setCursor } from "../cursor";
 import { getCommonBounds, getNonDeletedElements } from "../element";
-import type { ExcalidrawElement } from "../element/types";
+import { newElementWith } from "../element/mutateElement";
 import { t } from "../i18n";
 import { CODES, KEYS } from "../keys";
 import { getNormalizedZoom } from "../scene";
 import { centerScrollOn } from "../scene/scroll";
 import { getStateForZoom } from "../scene/zoom";
-import type { AppState, Offsets } from "../types";
+import { CaptureUpdateAction } from "../store";
 import { getShortcutKey, updateActiveTool } from "../utils";
+
 import { register } from "./register";
-import { Tooltip } from "../components/Tooltip";
-import { newElementWith } from "../element/mutateElement";
-import {
-  getDefaultAppState,
-  isEraserActive,
-  isHandToolActive,
-} from "../appState";
-import { DEFAULT_CANVAS_BACKGROUND_PICKS } from "../colors";
+
 import type { SceneBounds } from "../element/bounds";
-import { setCursor } from "../cursor";
-import { StoreAction } from "../store";
-import { clamp, roundToStep } from "../../math";
+import type { ExcalidrawElement } from "../element/types";
+import type { AppState, Offsets } from "../types";
 
 export const actionChangeViewBackgroundColor = register({
   name: "changeViewBackgroundColor",
@@ -54,9 +57,9 @@ export const actionChangeViewBackgroundColor = register({
   perform: (_, appState, value) => {
     return {
       appState: { ...appState, ...value },
-      storeAction: !!value.viewBackgroundColor
-        ? StoreAction.CAPTURE
-        : StoreAction.NONE,
+      captureUpdate: !!value.viewBackgroundColor
+        ? CaptureUpdateAction.IMMEDIATELY
+        : CaptureUpdateAction.EVENTUALLY,
     };
   },
   PanelComponent: ({ elements, appState, updateData, appProps }) => {
@@ -115,7 +118,7 @@ export const actionClearCanvas = register({
             ? { ...appState.activeTool, type: "selection" }
             : appState.activeTool,
       },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
 });
@@ -140,7 +143,7 @@ export const actionZoomIn = register({
         ),
         userToFollow: null,
       },
-      storeAction: StoreAction.NONE,
+      captureUpdate: CaptureUpdateAction.EVENTUALLY,
     };
   },
   PanelComponent: ({ updateData, appState }) => (
@@ -181,7 +184,7 @@ export const actionZoomOut = register({
         ),
         userToFollow: null,
       },
-      storeAction: StoreAction.NONE,
+      captureUpdate: CaptureUpdateAction.EVENTUALLY,
     };
   },
   PanelComponent: ({ updateData, appState }) => (
@@ -222,7 +225,7 @@ export const actionResetZoom = register({
         ),
         userToFollow: null,
       },
-      storeAction: StoreAction.NONE,
+      captureUpdate: CaptureUpdateAction.EVENTUALLY,
     };
   },
   PanelComponent: ({ updateData, appState }) => (
@@ -341,7 +344,7 @@ export const zoomToFitBounds = ({
       scrollY: centerScroll.scrollY,
       zoom: { value: newZoomValue },
     },
-    storeAction: StoreAction.NONE,
+    captureUpdate: CaptureUpdateAction.EVENTUALLY,
   };
 };
 
@@ -472,7 +475,7 @@ export const actionToggleTheme = register({
         theme:
           value || (appState.theme === THEME.LIGHT ? THEME.DARK : THEME.LIGHT),
       },
-      storeAction: StoreAction.NONE,
+      captureUpdate: CaptureUpdateAction.EVENTUALLY,
     };
   },
   keyTest: (event) => event.altKey && event.shiftKey && event.code === CODES.D,
@@ -510,7 +513,7 @@ export const actionToggleEraserTool = register({
         activeEmbeddable: null,
         activeTool,
       },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   keyTest: (event) => event.key === KEYS.E,
@@ -549,7 +552,7 @@ export const actionToggleHandTool = register({
         activeEmbeddable: null,
         activeTool,
       },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   keyTest: (event) =>

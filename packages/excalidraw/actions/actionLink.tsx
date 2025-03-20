@@ -1,12 +1,13 @@
+import { ToolButton } from "../components/ToolButton";
 import { getContextMenuLabel } from "../components/hyperlink/Hyperlink";
 import { LinkIcon } from "../components/icons";
-import { ToolButton } from "../components/ToolButton";
 import { isEmbeddableElement } from "../element/typeChecks";
 import { t } from "../i18n";
 import { KEYS } from "../keys";
 import { getSelectedElements } from "../scene";
-import { StoreAction } from "../store";
+import { CaptureUpdateAction } from "../store";
 import { getShortcutKey } from "../utils";
+
 import { register } from "./register";
 
 export const actionLink = register({
@@ -25,7 +26,7 @@ export const actionLink = register({
         showHyperlinkPopup: "editor",
         openMenu: null,
       },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   trackEvent: { category: "hyperlink", action: "click" },

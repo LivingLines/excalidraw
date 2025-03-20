@@ -1,18 +1,20 @@
 import { register } from "../actions/register";
 import { FONT_FAMILY, VERTICAL_ALIGN } from "../constants";
-import type { ExcalidrawProps } from "../types";
-import { escapeDoubleQuotes, getFontString, updateActiveTool } from "../utils";
 import { setCursorForShape } from "../cursor";
+import { CaptureUpdateAction } from "../store";
+import { escapeDoubleQuotes, getFontString, updateActiveTool } from "../utils";
+
 import { newTextElement } from "./newElement";
 import { wrapText } from "./textWrapping";
 import { isIframeElement } from "./typeChecks";
+
+import type { ExcalidrawProps } from "../types";
+import type { MarkRequired } from "../utility-types";
 import type {
   ExcalidrawElement,
   ExcalidrawIframeLikeElement,
   IframeData,
 } from "./types";
-import type { MarkRequired } from "../utility-types";
-import { StoreAction } from "../store";
 
 type IframeDataWithSandbox = MarkRequired<IframeData, "sandbox">;
 
@@ -340,7 +342,7 @@ export const actionSetEmbeddableAsActiveTool = register({
           type: "embeddable",
         }),
       },
-      storeAction: StoreAction.NONE,
+      captureUpdate: CaptureUpdateAction.EVENTUALLY,
     };
   },
 });

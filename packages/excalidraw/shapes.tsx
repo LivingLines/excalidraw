@@ -7,7 +7,7 @@ import {
   pointsEqual,
   type GlobalPoint,
   type LocalPoint,
-} from "../math";
+} from "@excalidraw/math";
 import {
   getClosedCurveShape,
   getCurvePathOps,
@@ -16,7 +16,8 @@ import {
   getFreedrawShape,
   getPolygonShape,
   type GeometricShape,
-} from "../utils/geometry/shape";
+} from "@excalidraw/utils/geometry/shape";
+
 import {
   EraserIcon,
   FreedrawIcon,
@@ -30,20 +31,21 @@ import {
   ROUNDNESS,
 } from "./constants";
 import { getElementAbsoluteCoords } from "./element";
-import type { Bounds } from "./element/bounds";
 import { shouldTestInside } from "./element/collision";
 import { LinearElementEditor } from "./element/linearElementEditor";
 import { getBoundTextElement } from "./element/textElement";
+import { KEYS } from "./keys";
+import { ShapeCache } from "./scene/ShapeCache";
+import { invariant } from "./utils";
+
+import type { Bounds } from "./element/bounds";
 import type {
   ElementsMap,
   ExcalidrawElement,
   ExcalidrawLinearElement,
   NonDeleted,
 } from "./element/types";
-import { KEYS } from "./keys";
-import { ShapeCache } from "./scene/ShapeCache";
 import type { NormalizedZoomValue, Zoom } from "./types";
-import { invariant } from "./utils";
 
 export const SHAPES = [
   {

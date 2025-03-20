@@ -1,10 +1,12 @@
-import type { Node } from "../../utils";
 import { KEYS } from "../../keys";
+
 import { type FontDescriptor } from "./FontPickerList";
+
+import type { Node } from "../../utils";
 
 interface FontPickerKeyNavHandlerProps {
   event: React.KeyboardEvent<HTMLDivElement>;
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
   hoveredFont: Node<FontDescriptor> | undefined;
   filteredFonts: Node<FontDescriptor>[];
   onClose: () => void;

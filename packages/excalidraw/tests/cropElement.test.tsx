@@ -1,23 +1,24 @@
 import React from "react";
-import ReactDOM from "react-dom";
 import { vi } from "vitest";
-import { Keyboard, Pointer, UI } from "./helpers/ui";
-import type { ExcalidrawImageElement, ImageCrop } from "../element/types";
-import { act, GlobalTestState, render } from "./test-utils";
+
 import { Excalidraw, exportToCanvas, exportToSvg } from "..";
-import { API } from "./helpers/api";
-import type { NormalizedZoomValue } from "../types";
-import { KEYS } from "../keys";
-import { duplicateElement } from "../element";
-import { cloneJSON } from "../utils";
 import { actionFlipHorizontal, actionFlipVertical } from "../actions";
+import { duplicateElement } from "../element";
+import { KEYS } from "../keys";
+import { cloneJSON } from "../utils";
+
+import { API } from "./helpers/api";
+import { Keyboard, Pointer, UI } from "./helpers/ui";
+import { act, GlobalTestState, render, unmountComponent } from "./test-utils";
+
+import type { ExcalidrawImageElement, ImageCrop } from "../element/types";
+import type { NormalizedZoomValue } from "../types";
 
 const { h } = window;
 const mouse = new Pointer("mouse");
 
 beforeEach(async () => {
-  // Unmount ReactDOM from root
-  ReactDOM.unmountComponentAtNode(document.getElementById("root")!);
+  unmountComponent();
 
   mouse.reset();
   localStorage.clear();
@@ -316,6 +317,7 @@ describe("Cropping and other features", async () => {
 
     const canvas = await exportToCanvas({
       elements: [image],
+      // @ts-ignore
       appState: h.state,
       files: h.app.files,
       exportPadding: 0,
@@ -326,6 +328,7 @@ describe("Cropping and other features", async () => {
 
     const svg = await exportToSvg({
       elements: [image],
+      // @ts-ignore
       appState: h.state,
       files: h.app.files,
       exportPadding: 0,

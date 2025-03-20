@@ -1,20 +1,23 @@
+import { pointFrom } from "@excalidraw/math";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { AppClassProperties, AppState, Primitive } from "../types";
-import type { StoreActionType } from "../store";
+
+import type { LocalPoint } from "@excalidraw/math";
+
+import { trackEvent } from "../analytics";
 import {
   DEFAULT_ELEMENT_BACKGROUND_COLOR_PALETTE,
   DEFAULT_ELEMENT_BACKGROUND_PICKS,
   DEFAULT_ELEMENT_STROKE_COLOR_PALETTE,
   DEFAULT_ELEMENT_STROKE_PICKS,
 } from "../colors";
-import { trackEvent } from "../analytics";
 import { ButtonIconSelect } from "../components/ButtonIconSelect";
 import { ColorPicker } from "../components/ColorPicker/ColorPicker";
-import { IconPicker } from "../components/IconPicker";
 import { FontPicker } from "../components/FontPicker/FontPicker";
+import { IconPicker } from "../components/IconPicker";
 // TODO barnabasmolnar/editor-redesign
 // TextAlignTopIcon, TextAlignBottomIcon,TextAlignMiddleIcon,
 // ArrowHead icons
+import { Range } from "../components/Range";
 import {
   ArrowheadArrowIcon,
   ArrowheadBarIcon,
@@ -71,6 +74,14 @@ import {
   isTextElement,
   redrawTextBoundingBox,
 } from "../element";
+import {
+  bindLinearElement,
+  bindPointToSnapToElementOutline,
+  calculateFixedPointForElbowArrowBinding,
+  getHoveredElementForBinding,
+  updateBoundElements,
+} from "../element/binding";
+import { LinearElementEditor } from "../element/linearElementEditor";
 import { mutateElement, newElementWith } from "../element/mutateElement";
 import { getBoundTextElement } from "../element/textElement";
 import {
@@ -80,17 +91,7 @@ import {
   isLinearElement,
   isUsingAdaptiveRadius,
 } from "../element/typeChecks";
-import type {
-  Arrowhead,
-  ExcalidrawBindableElement,
-  ExcalidrawElement,
-  ExcalidrawLinearElement,
-  ExcalidrawTextElement,
-  FontFamilyValues,
-  TextAlign,
-  VerticalAlign,
-  NonDeletedSceneElementsMap,
-} from "../element/types";
+import { Fonts, getLineHeight } from "../fonts";
 import { getLanguage, t } from "../i18n";
 import { KEYS } from "../keys";
 import { randomInteger } from "../random";
@@ -102,26 +103,31 @@ import {
   isSomeElementSelected,
 } from "../scene";
 import { hasStrokeColor } from "../scene/comparisons";
+import { CaptureUpdateAction } from "../store";
 import {
   arrayToMap,
   getFontFamilyString,
   getShortcutKey,
   tupleToCoors,
 } from "../utils";
+
+import { updateElbowArrowPoints } from "../element/elbowArrow";
+
 import { register } from "./register";
-import { StoreAction } from "../store";
-import { Fonts, getLineHeight } from "../fonts";
-import {
-  bindLinearElement,
-  bindPointToSnapToElementOutline,
-  calculateFixedPointForElbowArrowBinding,
-  getHoveredElementForBinding,
-  updateBoundElements,
-} from "../element/binding";
-import { LinearElementEditor } from "../element/linearElementEditor";
-import type { LocalPoint } from "../../math";
-import { pointFrom } from "../../math";
-import { Range } from "../components/Range";
+
+import type {
+  Arrowhead,
+  ExcalidrawBindableElement,
+  ExcalidrawElement,
+  ExcalidrawLinearElement,
+  ExcalidrawTextElement,
+  FontFamilyValues,
+  TextAlign,
+  VerticalAlign,
+  NonDeletedSceneElementsMap,
+} from "../element/types";
+import type { CaptureUpdateActionType } from "../store";
+import type { AppClassProperties, AppState, Primitive } from "../types";
 
 const FONT_SIZE_RELATIVE_INCREASE_STEP = 0.1;
 
@@ -271,7 +277,7 @@ const changeFontSize = (
           ? [...newFontSizes][0]
           : fallbackValue ?? appState.currentItemFontSize,
     },
-    storeAction: StoreAction.CAPTURE,
+    captureUpdate: CaptureUpdateAction.IMMEDIATELY,
   };
 };
 
@@ -301,9 +307,9 @@ export const actionChangeStrokeColor = register({
         ...appState,
         ...value,
       },
-      storeAction: !!value.currentItemStrokeColor
-        ? StoreAction.CAPTURE
-        : StoreAction.NONE,
+      captureUpdate: !!value.currentItemStrokeColor
+        ? CaptureUpdateAction.IMMEDIATELY
+        : CaptureUpdateAction.EVENTUALLY,
     };
   },
   PanelComponent: ({ elements, appState, updateData, appProps }) => (
@@ -347,9 +353,9 @@ export const actionChangeBackgroundColor = register({
         ...appState,
         ...value,
       },
-      storeAction: !!value.currentItemBackgroundColor
-        ? StoreAction.CAPTURE
-        : StoreAction.NONE,
+      captureUpdate: !!value.currentItemBackgroundColor
+        ? CaptureUpdateAction.IMMEDIATELY
+        : CaptureUpdateAction.EVENTUALLY,
     };
   },
   PanelComponent: ({ elements, appState, updateData, appProps }) => (
@@ -393,7 +399,7 @@ export const actionChangeFillStyle = register({
         }),
       ),
       appState: { ...appState, currentItemFillStyle: value },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   PanelComponent: ({ elements, appState, updateData }) => {
@@ -466,7 +472,7 @@ export const actionChangeStrokeWidth = register({
         }),
       ),
       appState: { ...appState, currentItemStrokeWidth: value },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   PanelComponent: ({ elements, appState, updateData }) => (
@@ -521,7 +527,7 @@ export const actionChangeSloppiness = register({
         }),
       ),
       appState: { ...appState, currentItemRoughness: value },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   PanelComponent: ({ elements, appState, updateData }) => (
@@ -572,7 +578,7 @@ export const actionChangeStrokeStyle = register({
         }),
       ),
       appState: { ...appState, currentItemStrokeStyle: value },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   PanelComponent: ({ elements, appState, updateData }) => (
@@ -627,7 +633,7 @@ export const actionChangeOpacity = register({
         true,
       ),
       appState: { ...appState, currentItemOpacity: value },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   PanelComponent: ({ elements, appState, updateData }) => (
@@ -802,22 +808,23 @@ export const actionChangeFontFamily = register({
           ...appState,
           ...nextAppState,
         },
-        storeAction: StoreAction.UPDATE,
+        captureUpdate: CaptureUpdateAction.NEVER,
       };
     }
 
     const { currentItemFontFamily, currentHoveredFontFamily } = value;
 
-    let nexStoreAction: StoreActionType = StoreAction.NONE;
+    let nextCaptureUpdateAction: CaptureUpdateActionType =
+      CaptureUpdateAction.EVENTUALLY;
     let nextFontFamily: FontFamilyValues | undefined;
     let skipOnHoverRender = false;
 
     if (currentItemFontFamily) {
       nextFontFamily = currentItemFontFamily;
-      nexStoreAction = StoreAction.CAPTURE;
+      nextCaptureUpdateAction = CaptureUpdateAction.IMMEDIATELY;
     } else if (currentHoveredFontFamily) {
       nextFontFamily = currentHoveredFontFamily;
-      nexStoreAction = StoreAction.NONE;
+      nextCaptureUpdateAction = CaptureUpdateAction.EVENTUALLY;
 
       const selectedTextElements = getSelectedElements(elements, appState, {
         includeBoundTextElement: true,
@@ -850,7 +857,7 @@ export const actionChangeFontFamily = register({
         ...appState,
         ...nextAppState,
       },
-      storeAction: nexStoreAction,
+      captureUpdate: nextCaptureUpdateAction,
     };
 
     if (nextFontFamily && !skipOnHoverRender) {
@@ -1175,7 +1182,7 @@ export const actionChangeTextAlign = register({
         ...appState,
         currentItemTextAlign: value,
       },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   PanelComponent: ({ elements, appState, updateData, app }) => {
@@ -1265,7 +1272,7 @@ export const actionChangeVerticalAlign = register({
       appState: {
         ...appState,
       },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   PanelComponent: ({ elements, appState, updateData, app }) => {
@@ -1350,7 +1357,7 @@ export const actionChangeRoundness = register({
         ...appState,
         currentItemRoundness: value,
       },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   PanelComponent: ({ elements, appState, updateData }) => {
@@ -1509,7 +1516,7 @@ export const actionChangeArrowhead = register({
           ? "currentItemStartArrowhead"
           : "currentItemEndArrowhead"]: value.type,
       },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   PanelComponent: ({ elements, appState, updateData }) => {
@@ -1567,7 +1574,7 @@ export const actionChangeArrowType = register({
       if (!isArrowElement(el)) {
         return el;
       }
-      const newElement = newElementWith(el, {
+      let newElement = newElementWith(el, {
         roundness:
           value === ARROW_TYPE.round
             ? {
@@ -1582,6 +1589,8 @@ export const actionChangeArrowType = register({
       });
 
       if (isElbowArrow(newElement)) {
+        newElement.fixedSegments = null;
+
         const elementsMap = app.scene.getNonDeletedElementsMap();
 
         app.dismissLinearEditor();
@@ -1633,18 +1642,16 @@ export const actionChangeArrowType = register({
 
         const finalStartPoint = startHoveredElement
           ? bindPointToSnapToElementOutline(
-              startGlobalPoint,
-              endGlobalPoint,
+              newElement,
               startHoveredElement,
-              elementsMap,
+              "start",
             )
           : startGlobalPoint;
         const finalEndPoint = endHoveredElement
           ? bindPointToSnapToElementOutline(
-              endGlobalPoint,
-              startGlobalPoint,
+              newElement,
               endHoveredElement,
-              elementsMap,
+              "end",
             )
           : endGlobalPoint;
 
@@ -1658,46 +1665,71 @@ export const actionChangeArrowType = register({
         endHoveredElement &&
           bindLinearElement(newElement, endHoveredElement, "end", elementsMap);
 
-        mutateElement(newElement, {
-          points: [finalStartPoint, finalEndPoint].map(
-            (p): LocalPoint =>
-              pointFrom(p[0] - newElement.x, p[1] - newElement.y),
-          ),
-          ...(startElement && newElement.startBinding
+        const startBinding =
+          startElement && newElement.startBinding
             ? {
-                startBinding: {
-                  // @ts-ignore TS cannot discern check above
-                  ...newElement.startBinding!,
-                  ...calculateFixedPointForElbowArrowBinding(
-                    newElement,
-                    startElement,
-                    "start",
-                    elementsMap,
-                  ),
-                },
+                // @ts-ignore TS cannot discern check above
+                ...newElement.startBinding!,
+                ...calculateFixedPointForElbowArrowBinding(
+                  newElement,
+                  startElement,
+                  "start",
+                  elementsMap,
+                ),
               }
-            : {}),
-          ...(endElement && newElement.endBinding
+            : null;
+        const endBinding =
+          endElement && newElement.endBinding
             ? {
-                endBinding: {
-                  // @ts-ignore TS cannot discern check above
-                  ...newElement.endBinding,
-                  ...calculateFixedPointForElbowArrowBinding(
-                    newElement,
-                    endElement,
-                    "end",
-                    elementsMap,
-                  ),
-                },
+                // @ts-ignore TS cannot discern check above
+                ...newElement.endBinding,
+                ...calculateFixedPointForElbowArrowBinding(
+                  newElement,
+                  endElement,
+                  "end",
+                  elementsMap,
+                ),
               }
-            : {}),
-        });
+            : null;
+
+        newElement = {
+          ...newElement,
+          startBinding,
+          endBinding,
+          ...updateElbowArrowPoints(newElement, elementsMap, {
+            points: [finalStartPoint, finalEndPoint].map(
+              (p): LocalPoint =>
+                pointFrom(p[0] - newElement.x, p[1] - newElement.y),
+            ),
+            startBinding,
+            endBinding,
+            fixedSegments: null,
+          }),
+        };
 
         LinearElementEditor.updateEditorMidPointsCache(
           newElement,
           elementsMap,
           app.state,
         );
+      } else {
+        const elementsMap = app.scene.getNonDeletedElementsMap();
+        if (newElement.startBinding) {
+          const startElement = elementsMap.get(
+            newElement.startBinding.elementId,
+          ) as ExcalidrawBindableElement;
+          if (startElement) {
+            bindLinearElement(newElement, startElement, "start", elementsMap);
+          }
+        }
+        if (newElement.endBinding) {
+          const endElement = elementsMap.get(
+            newElement.endBinding.elementId,
+          ) as ExcalidrawBindableElement;
+          if (endElement) {
+            bindLinearElement(newElement, endElement, "end", elementsMap);
+          }
+        }
       }
 
       return newElement;
@@ -1723,7 +1755,7 @@ export const actionChangeArrowType = register({
     return {
       elements: newElements,
       appState: newState,
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   PanelComponent: ({ elements, appState, updateData }) => {

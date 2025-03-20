@@ -1,21 +1,23 @@
+import { ToolButton } from "../components/ToolButton";
 import {
   DistributeHorizontallyIcon,
   DistributeVerticallyIcon,
 } from "../components/icons";
-import { ToolButton } from "../components/ToolButton";
-import type { Distribution } from "../distribute";
 import { distributeElements } from "../distribute";
 import { getNonDeletedElements } from "../element";
 import { isFrameLikeElement } from "../element/typeChecks";
-import type { ExcalidrawElement } from "../element/types";
 import { updateFrameMembershipOfSelectedElements } from "../frame";
 import { t } from "../i18n";
 import { CODES, KEYS } from "../keys";
 import { isSomeElementSelected } from "../scene";
-import { StoreAction } from "../store";
-import type { AppClassProperties, AppState } from "../types";
+import { CaptureUpdateAction } from "../store";
 import { arrayToMap, getShortcutKey } from "../utils";
+
 import { register } from "./register";
+
+import type { Distribution } from "../distribute";
+import type { ExcalidrawElement } from "../element/types";
+import type { AppClassProperties, AppState } from "../types";
 
 const enableActionGroup = (appState: AppState, app: AppClassProperties) => {
   const selectedElements = app.scene.getSelectedElements(appState);
@@ -60,7 +62,7 @@ export const distributeHorizontally = register({
         space: "between",
         axis: "x",
       }),
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   keyTest: (event) =>
@@ -91,7 +93,7 @@ export const distributeVertically = register({
         space: "between",
         axis: "y",
       }),
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
   keyTest: (event) =>

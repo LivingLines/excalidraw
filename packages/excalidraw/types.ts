@@ -1,4 +1,19 @@
-import type React from "react";
+import type { Action } from "./actions/types";
+import type { Spreadsheet } from "./charts";
+import type { ClipboardData } from "./clipboard";
+import type App from "./components/App";
+import type Library from "./data/library";
+import type { FileSystemHandle } from "./data/filesystem";
+import type { IMAGE_MIME_TYPES, MIME_TYPES } from "./constants";
+import type { ContextMenuItems } from "./components/ContextMenu";
+import type { SnapLine } from "./snapping";
+import type { Merge, MaybePromise, ValueOf, MakeBrand } from "./utility-types";
+import type { CaptureUpdateActionType } from "./store";
+import type { UserIdleState } from "./constants";
+import type { ImportedDataState } from "./data/types";
+import type { SuggestedBinding } from "./element/binding";
+import type { LinearElementEditor } from "./element/linearElementEditor";
+import type { MaybeTransformHandleType } from "./element/transformHandles";
 import type {
   PointerType,
   ExcalidrawLinearElement,
@@ -23,24 +38,11 @@ import type {
   OrderedExcalidrawElement,
   ExcalidrawNonSelectionElement,
 } from "./element/types";
-import type { Action } from "./actions/types";
-import type { LinearElementEditor } from "./element/linearElementEditor";
-import type { SuggestedBinding } from "./element/binding";
-import type { ImportedDataState } from "./data/types";
-import type App from "./components/App";
-import type { throttleRAF } from "./utils";
-import type { Spreadsheet } from "./charts";
 import type { Language } from "./i18n";
-import type { ClipboardData } from "./clipboard";
 import type { isOverScrollBars } from "./scene/scrollbars";
-import type { MaybeTransformHandleType } from "./element/transformHandles";
-import type Library from "./data/library";
-import type { FileSystemHandle } from "./data/filesystem";
-import type { IMAGE_MIME_TYPES, MIME_TYPES } from "./constants";
-import type { ContextMenuItems } from "./components/ContextMenu";
-import type { SnapLine } from "./snapping";
-import type { Merge, MaybePromise, ValueOf, MakeBrand } from "./utility-types";
-import type { StoreActionType } from "./store";
+import type { throttleRAF } from "./utils";
+import type React from "react";
+import type { JSX } from "react";
 
 export type SocketId = string & { _brand: "SocketId" };
 
@@ -587,14 +589,8 @@ export type SceneData = {
   elements?: ImportedDataState["elements"];
   appState?: ImportedDataState["appState"];
   collaborators?: Map<SocketId, Collaborator>;
-  storeAction?: StoreActionType;
+  captureUpdate?: CaptureUpdateActionType;
 };
-
-export enum UserIdleState {
-  ACTIVE = "active",
-  AWAY = "away",
-  IDLE = "idle",
-}
 
 export type ExportOpts = {
   saveFileToDisk?: boolean;

@@ -1,4 +1,3 @@
-import { type Point } from "points-on-curve";
 import {
   type Radians,
   pointFrom,
@@ -12,7 +11,14 @@ import {
   pointFromVector,
   clamp,
   isCloseTo,
-} from "../../math";
+} from "@excalidraw/math";
+import { type Point } from "points-on-curve";
+
+import {
+  getElementAbsoluteCoords,
+  getResizedElementAbsoluteCoords,
+} from "./bounds";
+
 import type { TransformHandleType } from "./transformHandles";
 import type {
   ElementsMap,
@@ -21,10 +27,6 @@ import type {
   ImageCrop,
   NonDeleted,
 } from "./types";
-import {
-  getElementAbsoluteCoords,
-  getResizedElementAbsoluteCoords,
-} from "./bounds";
 
 export const MINIMAL_CROP_SIZE = 10;
 

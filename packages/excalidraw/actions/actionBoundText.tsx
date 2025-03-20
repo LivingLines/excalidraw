@@ -5,6 +5,11 @@ import {
   VERTICAL_ALIGN,
 } from "../constants";
 import { isTextElement, newElement } from "../element";
+import {
+  getOriginalContainerHeightFromCache,
+  resetOriginalContainerCache,
+  updateOriginalContainerCache,
+} from "../element/containerCache";
 import { mutateElement } from "../element/mutateElement";
 import {
   computeBoundTextPosition,
@@ -12,16 +17,18 @@ import {
   getBoundTextElement,
   redrawTextBoundingBox,
 } from "../element/textElement";
-import {
-  getOriginalContainerHeightFromCache,
-  resetOriginalContainerCache,
-  updateOriginalContainerCache,
-} from "../element/containerCache";
+import { measureText } from "../element/textMeasurements";
 import {
   hasBoundTextElement,
   isTextBindableContainer,
   isUsingAdaptiveRadius,
 } from "../element/typeChecks";
+import { syncMovedIndices } from "../fractionalIndex";
+import { CaptureUpdateAction } from "../store";
+import { arrayToMap, getFontString } from "../utils";
+
+import { register } from "./register";
+
 import type {
   ExcalidrawElement,
   ExcalidrawLinearElement,
@@ -30,11 +37,6 @@ import type {
 } from "../element/types";
 import type { AppState } from "../types";
 import type { Mutable } from "../utility-types";
-import { arrayToMap, getFontString } from "../utils";
-import { register } from "./register";
-import { syncMovedIndices } from "../fractionalIndex";
-import { StoreAction } from "../store";
-import { measureText } from "../element/textMeasurements";
 
 export const actionUnbindText = register({
   name: "unbindText",
@@ -86,7 +88,7 @@ export const actionUnbindText = register({
     return {
       elements,
       appState,
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
 });
@@ -163,7 +165,7 @@ export const actionBindText = register({
     return {
       elements: pushTextAboveContainer(elements, container, textElement),
       appState: { ...appState, selectedElementIds: { [container.id]: true } },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
 });
@@ -323,7 +325,7 @@ export const actionWrapTextInContainer = register({
         ...appState,
         selectedElementIds: containerIds,
       },
-      storeAction: StoreAction.CAPTURE,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
 });

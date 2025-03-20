@@ -1,6 +1,7 @@
-import { promiseTry } from "../utils";
-import { LOCAL_FONT_PROTOCOL } from "./FontMetadata";
 import { subsetWoff2GlyphsByCodepoints } from "../subset/subset-main";
+import { promiseTry } from "../utils";
+
+import { LOCAL_FONT_PROTOCOL } from "./FontMetadata";
 
 type DataURL = string;
 
@@ -8,10 +9,10 @@ export class ExcalidrawFontFace {
   public readonly urls: URL[] | DataURL[];
   public readonly fontFace: FontFace;
 
-  private static readonly UNPKG_FALLBACK_URL = `https://unpkg.com/${
-    import.meta.env.VITE_PKG_NAME
-      ? `${import.meta.env.VITE_PKG_NAME}@${import.meta.env.PKG_VERSION}` // should be provided by vite during package build
-      : "@excalidraw/excalidraw" // fallback to latest package version (i.e. for app)
+  private static readonly ASSETS_FALLBACK_URL = `https://esm.sh/${
+    import.meta.env.PKG_NAME
+      ? `${import.meta.env.PKG_NAME}@${import.meta.env.PKG_VERSION}` // is provided during package build
+      : "@excalidraw/excalidraw" // fallback to the latest package version (i.e. for app)
   }/dist/prod/`;
 
   constructor(family: string, uri: string, descriptors?: FontFaceDescriptors) {
@@ -164,7 +165,7 @@ export class ExcalidrawFontFace {
     }
 
     // fallback url for bundled fonts
-    urls.push(new URL(assetUrl, ExcalidrawFontFace.UNPKG_FALLBACK_URL));
+    urls.push(new URL(assetUrl, ExcalidrawFontFace.ASSETS_FALLBACK_URL));
 
     return urls;
   }
