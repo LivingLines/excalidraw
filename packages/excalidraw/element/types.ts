@@ -78,6 +78,8 @@ type _ExcalidrawElementBase = Readonly<{
   link: string | null;
   locked: boolean;
   customData?: Record<string, any>;
+  /** unset if element not handled by syntax highlighting else color of the syntax highlighting */
+  syntaxHighlighting?: string;
 }>;
 
 export type ExcalidrawSelectionElement = _ExcalidrawElementBase & {

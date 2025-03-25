@@ -1,0 +1,260 @@
+// Variables
+$main-color: #35415f;
+$highlight-color: #4CAF50;
+$hint-background: #fff2a9;
+$particle-color: #2ea0af;
+
+#feedback-container {
+  color: #4a4a4a;
+  font-size: 1em;
+  font-weight: 400;
+  line-height: 1.5;
+  font-family: BlinkMacSystemFont, -apple-system, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  // Feedback symbol
+  #feedback-symbol {
+    position: absolute;
+    cursor: pointer;
+    scale: 1;
+    transition: scale 0.5s ease-in-out;
+    animation: pulse 0.3s;
+    animation-delay: 0.5s;
+
+    &:hover {
+      scale: 1.1;
+      transition: scale 0.2s ease-in-out;
+      animation: none;
+    }
+
+    &:active {
+      scale: 1.15;
+      transition: scale 0.2s ease-in-out;
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.1);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+  }
+
+  // Particle
+  .particle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background-color: $particle-color;
+    border-radius: 50%;
+    transform-origin: center;
+    z-index: 4;
+  }
+
+  // Formula display
+  #formula-display {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: $main-color;
+    color: white;
+    width: 9rem;
+
+    p {
+      position: fixed;
+      display: flex;
+      align-items: center;
+      padding: 5px;
+      font-size: 1rem;
+    }
+  }
+
+  // Speech box
+  #speech-box {
+    margin: -31.5px 5px 5px 40px;
+    /* -31.5px trial and error */
+    position: relative;
+    min-width: 150px;
+    max-width: 300px;
+    padding: 10px 10px 1.5em;
+    background-color: white;
+    border: 2px solid $main-color;
+    border-radius: 4px;
+
+    &.below {
+      margin-top: 40px;
+      margin-left: -60px;
+      max-width: 200px;
+
+      #speech-box-triangle {
+        top: -20px;
+        left: auto;
+        border-color: transparent transparent $main-color transparent;
+      }
+    }
+
+    #help-text {
+      margin: 0
+    }
+
+    #speech-box-triangle {
+      content: "";
+      position: absolute;
+      border-width: 10px;
+      border-style: solid;
+      top: 20px;
+      left: -20px;
+      border-color: transparent $main-color transparent transparent;
+    }
+
+    ol {
+      padding-left: 1.5em;
+
+      li {
+        margin-bottom: 0.5em;
+      }
+    }
+  }
+
+  // Hint button
+  .hint-button {
+    background: $hint-background;
+    border: 2px solid $main-color;
+    border-radius: 3px;
+    height: 3em;
+    width: 3em;
+    position: absolute;
+    right: 10%;
+    padding: 11px 12px;
+    cursor: pointer;
+    bottom: -1.5em;
+
+    img {
+      max-height: 100%;
+      filter: opacity(0.6);
+
+      &:hover {
+        filter: opacity(0.8);
+        transition: 0.3s;
+      }
+
+      &:active {
+        filter: opacity(1);
+        transition: 0.3s;
+      }
+    }
+
+    &#previous {
+      margin-right: 3.5em;
+
+      img {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  // Right buttons
+  .right-buttons {
+    position: absolute;
+    right: 60px;
+    left: 0;
+    bottom: 7px;
+    display: flex;
+    justify-content: flex-end;
+    pointer-events: none;
+    z-index: 5;
+
+    * {
+      margin: 5px;
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+      transition: 0.1s;
+      pointer-events: auto;
+    }
+
+    #label-input {
+      width: 60vw;
+      display: block;
+    }
+
+    #save-opener {
+      font-size: 0.6rem;
+      padding: 0.3rem;
+      height: 20px;
+      width: 20px;
+      border: 1px solid lightgray;
+    }
+
+    button {
+      color: white;
+
+      &.check-solution {
+        background-color: $highlight-color;
+        border: 2px solid $highlight-color;
+      }
+
+      &.save {
+        background-color: $main-color;
+        border: 2px solid $main-color;
+      }
+
+      &:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        transition: 0.3s;
+      }
+
+      &:active {
+        background-color: white;
+        transition: 0.1s;
+
+        &.check-solution {
+          color: $highlight-color;
+          border: 2px solid $highlight-color;
+        }
+
+        &.save {
+          color: $main-color;
+          border: 2px solid $main-color;
+        }
+      }
+
+      &:focus {
+        outline: none;
+      }
+    }
+  }
+
+  // Recognition line
+  .recognition-line {
+    margin-top: -0.7em;
+    position: absolute;
+    transform: translate(-50%, -100%);
+    background-color: white;
+    padding: 0.5em;
+    border-radius: 4px;
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  // Fix for react-latex-next package
+  span.katex-html {
+    display: none;
+  }
+
+}

@@ -6841,7 +6841,7 @@ jsonpointer@^5.0.0:
     object.assign "^4.1.4"
     object.values "^1.1.6"
 
-katex@^0.16.9:
+katex@^0.16.0, katex@^0.16.9:
   version "0.16.21"
   resolved "https://registry.yarnpkg.com/katex/-/katex-0.16.21.tgz#8f63c659e931b210139691f2cc7bb35166b792a3"
   integrity sha512-XvqR7FgOHtWupfMiigNzmh+MgUVmDGU2kXZm899ZkPfcuoPuFxyHmXsgATDpFZDAXCI8tvinaVcDo8PIIJSo4A==
@@ -8164,6 +8164,13 @@ react-is@^18.0.0:
   version "18.3.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-18.3.1.tgz#e83557dc12eae63a99e003a46388b1dcbb44db7e"
   integrity sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==
+
+react-latex-next@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/react-latex-next/-/react-latex-next-3.0.0.tgz#3e347a13b1e701439b5fa52f75201bc86166854e"
+  integrity sha512-x70f1b1G7TronVigsRgKHKYYVUNfZk/3bciFyYX1lYLQH2y3/TXku3+5Vap8MDbJhtopePSYBsYWS6jhzIdz+g==
+  dependencies:
+    katex "^0.16.0"
 
 react-refresh@^0.14.0:
   version "0.14.2"

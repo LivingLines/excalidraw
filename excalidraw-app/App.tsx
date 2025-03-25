@@ -23,7 +23,7 @@ import {
   VERSION_TIMEOUT,
 } from "@excalidraw/excalidraw/constants";
 import polyfill from "@excalidraw/excalidraw/polyfill";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { loadFromBlob } from "@excalidraw/excalidraw/data/blob";
 import { useCallbackRefState } from "@excalidraw/excalidraw/hooks/useCallbackRefState";
 import { t } from "@excalidraw/excalidraw/i18n";
@@ -59,16 +59,17 @@ import {
 import type { RemoteExcalidrawElement } from "@excalidraw/excalidraw/data/reconcile";
 import type { RestoredDataState } from "@excalidraw/excalidraw/data/restore";
 import type {
+  ExcalidrawFreeDrawElement,
   FileId,
   NonDeletedExcalidrawElement,
   OrderedExcalidrawElement,
 } from "@excalidraw/excalidraw/element/types";
-import type {
+import {
   AppState,
   ExcalidrawImperativeAPI,
   BinaryFiles,
   ExcalidrawInitialDataState,
-  UIAppState,
+  UIAppState, NormalizedZoomValue,
 } from "@excalidraw/excalidraw/types";
 import type { ResolutionType } from "@excalidraw/excalidraw/utility-types";
 import type { ResolvablePromise } from "@excalidraw/excalidraw/utils";
@@ -136,6 +137,9 @@ import { ExcalidrawPlusIframeExport } from "./ExcalidrawPlusIframeExport";
 import "./index.scss";
 
 import type { CollabAPI } from "./collab/Collab";
+import {updateScrollPosition, updateZoom} from "./recognition/scrollPosition";
+import {Trace} from "./recognition/trace";
+import RecognitionEvaluator from "./recognition/recognitionEvaluator";
 
 polyfill();
 
@@ -332,13 +336,35 @@ const initializeScene = async (opts: {
   return { scene: null, isExternalScene: false };
 };
 
-const ExcalidrawWrapper = () => {
+interface ExcalidrawWrapperProps {
+  onAppStateChanged?: (appState: AppState) => void;
+  onScrollChange?: (scrollX: number, scrollY: number, zoom: Readonly<{value: NormalizedZoomValue;}>) => void;
+  onPointerDown?: (activeTool: AppState["activeTool"]) => void;
+  onPointerUp?: (activeTool: AppState["activeTool"]) => void;
+  excalidrawAPIRef?: (api: ExcalidrawImperativeAPI) => void;
+  onChangeEvent?: (elements: readonly OrderedExcalidrawElement[], appState: AppState, files: BinaryFiles) => void;
+}
+
+const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({ onAppStateChanged,
+                                                               onScrollChange,
+                                                               onPointerDown,
+                                                               onPointerUp,
+                                                               excalidrawAPIRef,
+                                                               onChangeEvent}) => {
   const [errorMessage, setErrorMessage] = useState("");
   const isCollabDisabled = isRunningInIframe();
 
   const { editorTheme, appTheme, setAppTheme } = useHandleAppTheme();
 
   const [langCode, setLangCode] = useAppLangCode();
+
+  const handlePointerDown = (activeTool: AppState["activeTool"]) => {
+    if (onPointerDown) onPointerDown(activeTool)
+  }
+
+  const handlePointerUp = (activeTool: AppState["activeTool"]) => {
+    if (onPointerUp) onPointerUp(activeTool)
+  };
 
   // initial state
   // ---------------------------------------------------------------------------
@@ -363,6 +389,12 @@ const ExcalidrawWrapper = () => {
 
   const [excalidrawAPI, excalidrawRefCallback] =
     useCallbackRefState<ExcalidrawImperativeAPI>();
+
+  useEffect(() => {
+    if (excalidrawAPI && excalidrawAPIRef) {
+      excalidrawAPIRef(excalidrawAPI);
+    }
+  }, [excalidrawAPI, excalidrawAPIRef]);
 
   const [, setShareDialogState] = useAtom(shareDialogStateAtom);
   const [collabAPI] = useAtom(collabAPIAtom);
@@ -620,6 +652,11 @@ const ExcalidrawWrapper = () => {
     appState: AppState,
     files: BinaryFiles,
   ) => {
+    if (onChangeEvent) onChangeEvent(elements, appState, files);
+    if (onAppStateChanged) {
+      onAppStateChanged(appState);
+    }
+
     if (collabAPI?.isCollaborating()) {
       collabAPI.syncElements(elements);
     }
@@ -762,6 +799,9 @@ const ExcalidrawWrapper = () => {
         gridModeEnabled={true}
         excalidrawAPI={excalidrawRefCallback}
         onChange={onChange}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onScrollChange={onScrollChange}
         initialData={initialStatePromiseRef.current.promise}
         isCollaborating={isCollaborating}
         onPointerUpdate={collabAPI?.onPointerUpdate}
@@ -769,31 +809,7 @@ const ExcalidrawWrapper = () => {
           canvasActions: {
             toggleTheme: true,
             export: {
-              onExportToBackend,
-              renderCustomUI: excalidrawAPI
-                ? (elements, appState, files) => {
-                    return (
-                      <ExportToExcalidrawPlus
-                        elements={elements}
-                        appState={appState}
-                        files={files}
-                        name={excalidrawAPI.getName()}
-                        onError={(error) => {
-                          excalidrawAPI?.updateScene({
-                            appState: {
-                              errorMessage: error.message,
-                            },
-                          });
-                        }}
-                        onSuccess={() => {
-                          excalidrawAPI.updateScene({
-                            appState: { openDialog: null },
-                          });
-                        }}
-                      />
-                    );
-                  }
-                : undefined,
+              onExportToBackend
             },
           },
         }}
@@ -979,11 +995,68 @@ const ExcalidrawApp = () => {
   if (isCloudExportWindow) {
     return <ExcalidrawPlusIframeExport />;
   }
+  const [traces, setTraces] = useState<Trace[]>([]);
+  const [excalidrawAPI, excalidrawRefCallback] = useCallbackRefState<ExcalidrawImperativeAPI>();
+
+  // update scroll position and zoom for recognition module
+  function onScrollChange(scrollX: number, scrollY: number, zoom: Readonly<{value: NormalizedZoomValue;}>) {
+    updateScrollPosition({ x: scrollX, y: scrollY });
+    updateZoom(zoom.value)
+  }
+  function getFreeDrawElements(elements: readonly OrderedExcalidrawElement[]) {
+    return elements.filter(
+      element => isExcalidrawFreeDrawElement(element) && !element.isDeleted
+    ) as ExcalidrawFreeDrawElement[];
+  }
+  // check if elements are equal to traces
+  function didTracesChange(elements: readonly OrderedExcalidrawElement[]) {
+    let freeDrawElements = getFreeDrawElements(elements);
+    if (freeDrawElements.length !== traces.length) return true;
+    const traceIds = traces.map(trace => trace.get_id());
+    for (let freeDrawElement of freeDrawElements) {
+      if (!traceIds.includes(freeDrawElement.id)) return true;
+    }
+    return false;
+  }
+
+  function isExcalidrawFreeDrawElement(element: NonDeletedExcalidrawElement) {
+    return element.type === 'freedraw' && element.index !== null && typeof element.index === 'string';
+  }
+  function updateTracesIfNecessary(activeTool: AppState["activeTool"]) {
+    // console.log(activeTool);
+    // if (!(activeTool in ["freedraw", "eraser"])) return
+    const elements = excalidrawAPI?.getSceneElements()
+    if (elements == null) {
+      if (traces.length == 0) return;
+      else setTraces([])
+      return;
+    }
+    if (!didTracesChange(elements)) return
+    let freeDrawElements = getFreeDrawElements(elements);
+    let new_traces = freeDrawElements?.map(e => new Trace(e, excalidrawAPI)) || [];
+    setTraces(new_traces);
+  }
+
+  function onChangeEvent(elements: readonly OrderedExcalidrawElement[], state: AppState) {
+    if (state.newElement != null || !didTracesChange(elements)) return
+    let freeDrawElements = getFreeDrawElements(elements);
+    let new_traces = freeDrawElements?.map(e => new Trace(e, excalidrawAPI)) || [];
+    setTraces(new_traces);
+  }
 
   return (
     <TopErrorBoundary>
       <Provider store={appJotaiStore}>
-        <ExcalidrawWrapper />
+        <RecognitionEvaluator
+          traces={traces}
+        />
+        <ExcalidrawWrapper
+          excalidrawAPIRef={excalidrawRefCallback}
+          // onPointerUp={updateTracesIfNecessary}
+          onScrollChange={onScrollChange}
+          // onPointerDown={hideHelpText}
+          onChangeEvent={onChangeEvent}
+        />
       </Provider>
     </TopErrorBoundary>
   );

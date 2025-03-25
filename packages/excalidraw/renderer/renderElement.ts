@@ -409,9 +409,11 @@ const drawElementOnCanvas = (
       break;
     }
     case "freedraw": {
+      let strokeColor = element.syntaxHighlighting || element.strokeColor;
+
       // Draw directly to canvas
       context.save();
-      context.fillStyle = element.strokeColor;
+      context.fillStyle = strokeColor;
 
       const path = getFreeDrawPath2D(element) as Path2D;
       const fillShape = ShapeCache.get(element);
@@ -420,7 +422,7 @@ const drawElementOnCanvas = (
         rc.draw(fillShape);
       }
 
-      context.fillStyle = element.strokeColor;
+      context.fillStyle = strokeColor;
       context.fill(path);
 
       context.restore();
