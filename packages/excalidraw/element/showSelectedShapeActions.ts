@@ -15,6 +15,8 @@ export const showSelectedShapeActions = (
           (appState.activeTool.type !== "selection" &&
             appState.activeTool.type !== "eraser" &&
             appState.activeTool.type !== "hand" &&
-            appState.activeTool.type !== "laser"))) ||
+            appState.activeTool.type !== "laser" &&
+            appState.activeTool.type !== "freedraw"
+          ))) ||
         getSelectedElements(elements, appState).length),
   );

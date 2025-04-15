@@ -1,10 +1,11 @@
-import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
-import {Symbol} from "./helpText";
+import React, { useEffect, useState } from "react";
+import {HelpText, resetTraces, Symbol} from "./helpText";
 import {
   onScrollChangeEvent,
   worldToCanvasCoordinates,
 } from "./scrollPosition";
 import { imagePaths } from "./imagePaths";
+import {Trace} from "./trace";
 
 interface Position {
   x: number;
@@ -14,12 +15,24 @@ interface Position {
 let particlesSpawned = true;
 
 export function FeedbackSymbols({
-  symbols = [],
-  onSymbolClicked,
+  traces,
+  symbols,
 }: {
+  traces: Trace[];
   symbols: Symbol[];
-  onSymbolClicked?: (symbol: Symbol) => void;
 }) {
+  const [activeSymbol, setActiveSymbol] = useState<Symbol | null>(null);
+  if (symbols.length == 0 && activeSymbol != null) setActiveSymbol(null);
+  const onSymbolClicked = (symbol: Symbol) => {
+    if (activeSymbol === symbol) {
+      setActiveSymbol(null);
+    }
+    else setActiveSymbol(symbol);
+  }
+
+  if (activeSymbol == null)
+    resetTraces();
+
   particlesSpawned = false;
   return (
     <>
@@ -30,6 +43,7 @@ export function FeedbackSymbols({
           onClick={() => onSymbolClicked?.(symbol)}
         />
       ))}
+      {activeSymbol && <HelpText traces={traces} symbol={activeSymbol} />}
     </>
   );
 }
@@ -83,7 +97,6 @@ interface PartyParticlesProps {
 }
 
 function PartyParticles({ position }: PartyParticlesProps) {
-  let particleSpawned = false;
   const number_of_particle_groups = Math.floor(Math.random() * 5) + 1;
   return (
     <>

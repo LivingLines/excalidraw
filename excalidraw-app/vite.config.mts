@@ -83,7 +83,7 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       Sitemap({
-        hostname: "https://excalidraw.com",
+        hostname: "https://formel-feedback.de",
         outDir: "build",
         changefreq: "monthly",
         // its static in public folder

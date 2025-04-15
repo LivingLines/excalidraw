@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import {Line, RecognitionLines} from "./recognitionLine";
 import {FeedbackSymbols} from "./feedbackSymbol";
-import {HelpText, resetTraces, Symbol} from "./helpText";
+import {resetTraces, Symbol} from "./helpText";
 import {Trace} from "./trace";
 import './index.scss';
 import {onScrollChangeEvent} from "./scrollPosition";
@@ -39,8 +39,6 @@ function RecognitionEvaluator({traces}: RecognitionEvaluatorProps){
 
   const [lines, setLines] = useState<Line[]>([]);
   const [symbols, setSymbols] = useState<Symbol[]>([]);
-  const [activeSymbol, setActiveSymbol] = useState<Symbol | null>(null);
-  if (symbols.length == 0 && activeSymbol != null) setActiveSymbol(null);
 
   const updateRecognition = async () => {
     const traceIds = traces.map(trace => trace.get_id());
@@ -53,7 +51,6 @@ function RecognitionEvaluator({traces}: RecognitionEvaluatorProps){
     if (traces.length === 0) {
       setLines([]);
       setSymbols([]);
-      setActiveSymbol(null);
       return
     }
 
@@ -105,7 +102,6 @@ function RecognitionEvaluator({traces}: RecognitionEvaluatorProps){
     });
     setLines(recognitionLines)
     setSymbols([])
-    setActiveSymbol(null)
   };
 
   const getHints = async () => {
@@ -180,7 +176,6 @@ function RecognitionEvaluator({traces}: RecognitionEvaluatorProps){
         feedbackSymbols.push(feedbackSymbol);
       }
       setSymbols(feedbackSymbols);
-      setActiveSymbol(null);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -195,21 +190,10 @@ function RecognitionEvaluator({traces}: RecognitionEvaluatorProps){
 
   updateRecognition().then();
 
-  const onSymbolClicked = (symbol: Symbol) => {
-    if (activeSymbol === symbol) {
-      setActiveSymbol(null);
-    }
-    else setActiveSymbol(symbol);
-  }
-
-  if (activeSymbol == null)
-    resetTraces();
-
   return (
     <div id={"feedback-container"}>
       <RecognitionLines lines={lines} />
-      <FeedbackSymbols symbols={symbols} onSymbolClicked={onSymbolClicked} />
-      {activeSymbol && <HelpText traces={traces} symbol={activeSymbol} />}
+      <FeedbackSymbols traces={traces} symbols={symbols}/>
       <div className={"right-buttons"}>
         <button className={"check-solution"} onClick={getHints}>
           Prüfen

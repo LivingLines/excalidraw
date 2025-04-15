@@ -34,6 +34,9 @@ export function HelpText({
   const [position, setPositionState] = useState<Position>(worldToCanvasCoordinates(symbol.position));
   const [feedbackIndex, setFeedbackIndexState] = useState<number>(0);
 
+  if (position.x != worldToCanvasCoordinates(symbol.position).x || position.y != worldToCanvasCoordinates(symbol.position).y)
+    setPositionState(worldToCanvasCoordinates(symbol.position));
+
   onScrollChangeEvent.push(() => {
     setPositionState(worldToCanvasCoordinates(symbol.position));
   }); // TODO: not sure if this event is ever removed
