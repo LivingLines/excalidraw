@@ -169,7 +169,7 @@ $particle-color: #2ea0af;
   // Right buttons
   .right-buttons {
     position: absolute;
-    right: 60px;
+    right: 0;
     left: 0;
     bottom: 7px;
     display: flex;
@@ -207,6 +207,7 @@ $particle-color: #2ea0af;
       &.check-solution {
         background-color: $highlight-color;
         border: 2px solid $highlight-color;
+        margin: auto;
       }
 
       &.save {
