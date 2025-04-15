@@ -485,16 +485,7 @@ function CommandPaletteInner({
             icon,
             keywords: ["toolbar"],
             viewMode: false,
-            perform: ({ event }) => {
-              if (value === "image") {
-                app.setActiveTool({
-                  type: value,
-                  insertOnCanvasDirectly: event.type === EVENT.KEYDOWN,
-                });
-              } else {
-                app.setActiveTool({ type: value });
-              }
-            },
+            perform: ({ event }) => app.setActiveTool({ type: value }),
           };
 
           acc.push(command);

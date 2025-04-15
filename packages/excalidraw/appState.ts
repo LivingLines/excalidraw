@@ -49,7 +49,7 @@ export const getDefaultAppState = (): Omit<
     editingGroupId: null,
     editingLinearElement: null,
     activeTool: {
-      type: "selection",
+      type: "freedraw",
       customType: null,
       locked: DEFAULT_ELEMENT_PROPS.locked,
       lastActiveTool: null,

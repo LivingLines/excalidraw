@@ -49,33 +49,19 @@ import type { NormalizedZoomValue, Zoom } from "./types";
 
 export const SHAPES = [
   {
-    icon: SelectionIcon,
-    value: "selection",
-    key: KEYS.V,
-    numericKey: KEYS["1"],
-    fillable: true,
-  },
-  {
     icon: FreedrawIcon,
     value: "freedraw",
     key: [KEYS.P, KEYS.X],
-    numericKey: KEYS["2"],
+    numericKey: KEYS["1"],
     fillable: false,
   },
   {
     icon: EraserIcon,
     value: "eraser",
     key: KEYS.E,
-    numericKey: KEYS["3"],
+    numericKey: KEYS["2"],
     fillable: false,
-  },
-  {
-    icon: ImageIcon,
-    value: "image",
-    key: null,
-    numericKey: KEYS["4"],
-    fillable: false,
-  },
+  }
 ] as const;
 
 export const findShapeByKey = (key: string) => {
