@@ -1052,9 +1052,7 @@ const ExcalidrawApp = () => {
         />
         <ExcalidrawWrapper
           excalidrawAPIRef={excalidrawRefCallback}
-          // onPointerUp={updateTracesIfNecessary}
           onScrollChange={onScrollChange}
-          // onPointerDown={hideHelpText}
           onChangeEvent={onChangeEvent}
         />
       </Provider>

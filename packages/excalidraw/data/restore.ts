@@ -146,30 +146,24 @@ const repairBinding = <T extends ExcalidrawLinearElement>(
     : PointBinding | FixedPointBinding | null;
 };
 
+type RestoreElementBaseType = Required<Omit<ExcalidrawElement, "customData" | "syntaxHighlighting">> & {
+  syntaxHighlighting?: string;
+  customData?: ExcalidrawElement["customData"];
+  /** @deprecated */
+  boundElementIds?: readonly ExcalidrawElement["id"][];
+  /** @deprecated */
+  strokeSharpness?: StrokeRoundness;
+};
+
 const restoreElementWithProperties = <
-  T extends Required<Omit<ExcalidrawElement, "customData">> & {
-    syntaxHighlighting?: ExcalidrawElement["syntaxHighlighting"];
-    customData?: ExcalidrawElement["customData"];
-    /** @deprecated */
-    boundElementIds?: readonly ExcalidrawElement["id"][];
-    /** @deprecated */
-    strokeSharpness?: StrokeRoundness;
-  },
-  K extends Pick<T, keyof Omit<Required<T>, keyof ExcalidrawElement>>,
+  T extends RestoreElementBaseType,
+  K extends Partial<Pick<T, keyof T>>,
 >(
   element: T,
-  extra: Pick<
-    T,
-    // This extra Pick<T, keyof K> ensure no excess properties are passed.
-    // @ts-ignore TS complains here but type checks the call sites fine.
-    keyof K
-  > &
-    Partial<Pick<ExcalidrawElement, "type" | "x" | "y" | "customData" | "syntaxHighlighting">>,
+  extra: K & Partial<Pick<ExcalidrawElement, "type" | "x" | "y" | "customData" | "syntaxHighlighting">>,
 ): T => {
   const base: Pick<T, keyof ExcalidrawElement> = {
     type: extra.type || element.type,
-    // all elements must have version > 0 so getSceneVersion() will pick up
-    // newly added elements
     version: element.version || 1,
     versionNonce: element.versionNonce ?? 0,
     index: element.index ?? null,
@@ -179,14 +173,12 @@ const restoreElementWithProperties = <
     strokeWidth: element.strokeWidth || DEFAULT_ELEMENT_PROPS.strokeWidth,
     strokeStyle: element.strokeStyle ?? DEFAULT_ELEMENT_PROPS.strokeStyle,
     roughness: element.roughness ?? DEFAULT_ELEMENT_PROPS.roughness,
-    opacity:
-      element.opacity == null ? DEFAULT_ELEMENT_PROPS.opacity : element.opacity,
+    opacity: element.opacity == null ? DEFAULT_ELEMENT_PROPS.opacity : element.opacity,
     angle: element.angle || (0 as Radians),
     x: extra.x ?? element.x ?? 0,
     y: extra.y ?? element.y ?? 0,
     strokeColor: element.strokeColor || DEFAULT_ELEMENT_PROPS.strokeColor,
-    backgroundColor:
-      element.backgroundColor || DEFAULT_ELEMENT_PROPS.backgroundColor,
+    backgroundColor: element.backgroundColor || DEFAULT_ELEMENT_PROPS.backgroundColor,
     width: element.width || 0,
     height: element.height || 0,
     seed: element.seed ?? 1,
@@ -195,14 +187,12 @@ const restoreElementWithProperties = <
     roundness: element.roundness
       ? element.roundness
       : element.strokeSharpness === "round"
-      ? {
-          // for old elements that would now use adaptive radius algo,
-          // use legacy algo instead
+        ? {
           type: isUsingAdaptiveRadius(element.type)
             ? ROUNDNESS.LEGACY
             : ROUNDNESS.PROPORTIONAL_RADIUS,
         }
-      : null,
+        : null,
     boundElements: element.boundElementIds
       ? element.boundElementIds.map((id) => ({ type: "arrow", id }))
       : element.boundElements ?? [],
